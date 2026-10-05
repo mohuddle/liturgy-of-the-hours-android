@@ -1,49 +1,44 @@
-# Daily tasks
+# Tasks
 
-Source of truth for what is done. After a task’s “Done when” is true, check it here, refresh the status board, update [README.md](README.md), and push to GitHub. Do not re-inventory the tree from memory.
+v1 progress for the Android Liturgy of the Hours. Product decisions: [DESIGN.md](DESIGN.md). Home page: [README.md](README.md).
 
-**How to start a day**
+Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours).
 
-> Do **only Task N** in `TASKS.md`. Follow DESIGN.md. Stop when that task’s “Done when” is true. Do not start the next task. No subagents.
+**2 of 10 done. Next: Task 3.**
 
-Replace N with the first unchecked task, or name it. If you finish early, stop anyway.
+## Board
 
-**Execution:** native, one task per session. Subagent-driven development is the expensive path; skip it for this project.
+| # | Task | Status | Notes |
+|---|---|---|---|
+| 1 | Gradle scaffold and assets | Done 2026-10-05 | `assembleDebug` OK. Package `io.github.mohuddle.hours`, minSdk 29. Device launch not verified. |
+| 2 | Domain: hours, schedule, verses, cache | Done 2026-10-05 | `OfficeModelTest` 7/7. No liturgical calendar. |
+| 3 | Domain: liturgical day and office assembly | Remaining | Next |
+| 4 | Persistence (DataStore + asset JSON) | Remaining | |
+| 5 | Hours screen | Remaining | |
+| 6 | Office screen and navigation | Remaining | |
+| 7 | Settings screen | Remaining | |
+| 8 | Alarm scheduling | Remaining | |
+| 9 | Notifications, receiver, permission CTAs | Remaining | |
+| 10 | Device pass (emulator / G5) | Remaining | |
 
-Plugin sources: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours) (local checkout `/home/anon/Work/liturgy-of-the-hours`).
-
-## Status
-
-**Done**
-
-- [x] **Task 1** — Gradle scaffold and assets (2026-10-05). `./gradlew assembleDebug` succeeded. Package `io.github.mohuddle.hours`, minSdk 29, verses/office/bell in the APK. Emulator/device launch was not verified (`adb` empty).
-- [x] **Task 2** — Domain: hours, schedule, verses, cache (2026-10-05). `./gradlew :app:testDebugUnitTest --tests io.github.mohuddle.hours.domain.OfficeModelTest` → 7/7 pass. No liturgical calendar yet.
-
-**Remaining (v1)**
-
-- [ ] **Task 3** — Domain: liturgical day and office assembly
-- [ ] **Task 4** — Persistence (DataStore + asset JSON)
-- [ ] **Task 5** — Hours screen
-- [ ] **Task 6** — Office screen and navigation
-- [ ] **Task 7** — Settings screen
-- [ ] **Task 8** — Alarm scheduling
-- [ ] **Task 9** — Notifications, receiver, permission CTAs
-- [ ] **Task 10** — Device pass (emulator / G5)
-
-**Later (not v1)**
+### Later (not v1)
 
 - [ ] Glance home-screen widget
 - [ ] Unrestricted-battery prompt if G5 testing misses bells
 - [ ] Compline
 - [ ] Play Store / F-Droid
 
+After a task’s “Done when” is true, mark it on this board, refresh the README progress table, and push.
+
 ---
 
-## File map (created as tasks land)
+## File map
+
+Landed through Task 2: `OfficeModel.kt`, `OfficeModelTest.kt`, assets, Gradle shell. The rest is still planned.
 
 ```
 app/src/main/java/io/github/mohuddle/hours/
-  domain/OfficeModel.kt          # 1:1 port of Model.js; no Android imports
+  domain/OfficeModel.kt          # hours, schedule, verses, cache (Task 2)
   data/HoursStore.kt             # DataStore + asset JSON
   notify/AlarmScheduler.kt
   notify/HourReceiver.kt
@@ -219,15 +214,12 @@ Record results (device, Android version, pass/fail) at the bottom of this file. 
 
 ---
 
-## Later (not v1)
-
-- [ ] Glance home-screen widget (Jerusalem Cross + current hour)
-- [ ] Unrestricted-battery prompt if G5 testing misses bells
-- [ ] Compline
-- [ ] Play Store / F-Droid
-
----
-
 ## Device pass log
 
 _(Task 10 fills this in.)_
+
+## Session prompt
+
+One task per working session. Native, no subagents.
+
+> Do only Task N in TASKS.md. Follow DESIGN.md. Stop when that task’s Done when is true. Do not start the next task. No subagents.

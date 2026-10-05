@@ -1,30 +1,53 @@
 # Liturgy of the Hours (Android)
 
-Native Kotlin port of the [Omarchy Liturgy of the Hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours) bar widget. Offline little hours, a brief office, a daily Berean Standard Bible verse, and a church bell at each enabled hour.
+Native Kotlin port of the [Omarchy Liturgy of the Hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours) bar widget.
 
 Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Status:** in progress. Tasks 1–2 are done (scaffold + domain hours/schedule/verses/cache). The liturgical calendar, screens, and bells are still remaining. See [TASKS.md](TASKS.md).
+**Progress: 2 of 10 v1 tasks.** Next is Task 3 (liturgical day and office assembly). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+
+| Status | Task |
+|---|---|
+| Done | 1. Gradle scaffold and bundled assets |
+| Done | 2. Domain: hours, schedule, verses, cache |
+| Next | 3. Domain: liturgical day and office assembly |
+| Remaining | 4–7 Persistence, Hours, Office, Settings screens |
+| Remaining | 8–10 Alarms, notifications, device pass |
+
+The installed debug APK is still a titled empty screen. Domain math for the six hours, the daily verse, and reminder cache is in place and unit-tested. There is no Play listing.
 
 ---
 
 ## Overview
 
-The widget on Omarchy lists Lauds, Prime, Terce, Sext, None, and Vespers, highlights the current hour, shows one BSB passage per local calendar day, and rings a chapel bell at each enabled time. Tapping the bell opens a brief office: the liturgical day, a chapter, a short respond, a collect, and a memorial collect.
+The Omarchy widget lists Lauds, Prime, Terce, Sext, None, and Vespers, highlights the current hour, shows one Berean Standard Bible passage per local calendar day, and rings a chapel bell at each enabled time. Tapping the bell opens a brief office: the liturgical day, a chapter, a short respond, a collect, and a memorial collect.
 
-This repository is that same office on Android: Compose screens, `AlarmManager` bells, and the same bundled JSON. No network. No Play listing yet. Sideload a debug APK from a local build.
+This repository is that same office on Android: Compose screens, `AlarmManager` bells, and the same bundled JSON. No network. Sideload a debug APK from a local build.
 
 ## Key features (v1 target)
 
-1. **Canonical hours** — Lauds, Prime, Terce, Sext, None, Vespers, with enable and time per hour. Defaults: 06:00, 07:00, 09:00, 12:00, 15:00, 18:00.
+1. **Canonical hours** — Lauds, Prime, Terce, Sext, None, Vespers, with enable and time per hour.
 2. **Daily Scripture** — one curated BSB passage per local calendar day, sequential, bundled in `app/src/main/assets/verses.json`.
 3. **The Office** — liturgical day (1662/1928/REC), chapter, short respond, collect, memorial collect from `app/src/main/assets/office.json`.
 4. **Church-bell reminders** — exact `AlarmManager` clocks; a high-priority notification that stays until you tap it or open the app; tap opens that hour’s office.
 5. **Offline** — no runtime network request, no accounts, no analytics.
 
 Not in v1: Compline, Matins, lectionary lessons, TTS, confessions, a home-screen widget, Play Store.
+
+### Hours and default times
+
+| Hour | Latin | Traditional | Default |
+|---|---|---|---|
+| Morning Prayer | Laudes | Dawn | 06:00 |
+| Prime | Prima | First Hour | 07:00 |
+| Terce | Tertia | Third Hour | 09:00 |
+| Sext | Sexta | Sixth Hour | 12:00 |
+| None | Nona | Ninth Hour | 15:00 |
+| Evening Prayer | Vesperae | Sunset | 18:00 |
+
+Prime is 07:00 by default so it does not collide with Morning Prayer.
 
 ## How to build and install
 
@@ -33,16 +56,15 @@ There is no Play listing. Install from a build of this repository.
 1. JDK 21 and an Android SDK with platform 36.
 2. Clone this repository.
 3. Point Gradle at the SDK (`sdk.dir` in `local.properties`, or `ANDROID_HOME`).
-4. Build and install:
+4. Build, test, and install:
 
 ```bash
 ./gradlew assembleDebug
+./gradlew :app:testDebugUnitTest
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The debug APK is a titled empty screen until Tasks 5–9 land. `assembleDebug` on 2026-10-05 succeeded with `minSdk 29` and `targetSdk 36`.
-
-Pace: one task from [TASKS.md](TASKS.md) per working session. After a task’s “Done when” is true, update this README’s status line, check the box in TASKS.md, and push.
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 7/7 green (hours, schedule, verses, cache). The APK still shows only the title until the UI tasks land.
 
 ## Technical specs
 
@@ -54,11 +76,12 @@ Pace: one task from [TASKS.md](TASKS.md) per working session. After a task’s �
 | compileSdk / targetSdk | 36 |
 | Application id | `io.github.mohuddle.hours` |
 | Domain spec | plugin `Model.js` + `tests/model.test.js` |
+| Domain so far | `OfficeModel.kt` (hours, schedule, verses, cache) |
 | Assets | `verses.json`, `office.json`, `church_bell.ogg` |
 
 ## Privacy
 
-The app does not need the internet. Scripture and office texts ship in the APK. Settings stay in app-private DataStore. There is no account, no crash reporter, and no analytics.
+The app does not need the internet. Scripture and office texts ship in the APK. Settings will stay in app-private DataStore. There is no account, no crash reporter, and no analytics.
 
 ## Security
 
