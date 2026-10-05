@@ -1,5 +1,7 @@
 # Liturgy of the Hours (Android)
 
+> A [Mobitecture](https://github.com/mohuddle) app · *apps, architected.*
+
 Native Kotlin port of the [Omarchy Liturgy of the Hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours) bar widget.
 
 Package: `io.github.mohuddle.hours`
@@ -90,3 +92,6 @@ Sideload only in v1. The scaffold declares no `INTERNET` permission. Hour remind
 ## License
 
 MIT. See [LICENSE](LICENSE). BSB text is CC0; collects and memorials are 1662/1928 public-domain texts. See [NOTICE.md](NOTICE.md).
+
+---
+Made by [Mobitecture](https://github.com/mohuddle) · apps, architected.
