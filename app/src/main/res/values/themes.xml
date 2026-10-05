@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Hours" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#FF1A1612</item>
+        <item name="android:navigationBarColor">#FF1A1612</item>
+        <item name="android:windowBackground">#FF1A1612</item>
+    </style>
+</resources>
