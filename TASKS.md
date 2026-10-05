@@ -17,10 +17,10 @@ Plugin sources: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarc
 **Done**
 
 - [x] **Task 1** — Gradle scaffold and assets (2026-10-05). `./gradlew assembleDebug` succeeded. Package `io.github.mohuddle.hours`, minSdk 29, verses/office/bell in the APK. Emulator/device launch was not verified (`adb` empty).
+- [x] **Task 2** — Domain: hours, schedule, verses, cache (2026-10-05). `./gradlew :app:testDebugUnitTest --tests io.github.mohuddle.hours.domain.OfficeModelTest` → 7/7 pass. No liturgical calendar yet.
 
 **Remaining (v1)**
 
-- [ ] **Task 2** — Domain: hours, schedule, verses, cache
 - [ ] **Task 3** — Domain: liturgical day and office assembly
 - [ ] **Task 4** — Persistence (DataStore + asset JSON)
 - [ ] **Task 5** — Hours screen
@@ -83,7 +83,7 @@ app/src/test/java/.../HourReceiverTest.kt
 
 ---
 
-## Task 2: Domain — hours, schedule, verses, cache
+## Task 2: Domain — hours, schedule, verses, cache ✅
 
 **Files:** Create `domain/OfficeModel.kt`, `app/src/test/.../OfficeModelTest.kt`.
 
@@ -92,7 +92,7 @@ app/src/test/java/.../HourReceiverTest.kt
 **Done when:** JUnit ports every assertion in plugin `tests/model.test.js` **through** the cache / after-evening / verse-position block (before `easterDate`). Run:
 
 ```
-./gradlew test --tests io.github.mohuddle.hours.domain.OfficeModelTest
+./gradlew :app:testDebugUnitTest --tests io.github.mohuddle.hours.domain.OfficeModelTest
 ```
 
 All of those tests pass. Liturgical calendar tests are still absent (Task 3).

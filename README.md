@@ -6,7 +6,7 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Status:** in progress. Task 1 (Gradle scaffold + bundled assets) is done. The app is not a usable office yet. See [TASKS.md](TASKS.md) for what is finished and what remains, and [DESIGN.md](DESIGN.md) for the product.
+**Status:** in progress. Tasks 1–2 are done (scaffold + domain hours/schedule/verses/cache). The liturgical calendar, screens, and bells are still remaining. See [TASKS.md](TASKS.md).
 
 ---
 
