@@ -1,5 +1,7 @@
 # Liturgy of the Hours (Android)
 
+![Liturgy icon](branding/liturgy-icon-vibrant.svg)
+
 > A [Mobitecture](https://github.com/mohuddle) app · *apps, architected.*
 
 Native Kotlin port of the [Omarchy Liturgy of the Hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours) bar widget.
