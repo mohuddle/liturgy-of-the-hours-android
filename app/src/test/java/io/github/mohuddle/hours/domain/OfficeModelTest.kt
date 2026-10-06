@@ -166,4 +166,127 @@ class OfficeModelTest {
         assertTrue(afterEvening.next.tomorrow)
         assertEquals("evening", OfficeModel.featuredHour(afterEvening)!!.id)
     }
+
+    @Test
+    fun liturgicalDayAndOfficeAssembly() {
+        val easter = OfficeModel.easterDate(2026)
+        assertEquals(2026, easter.year)
+        assertEquals(4, easter.monthValue)
+        assertEquals(5, easter.dayOfMonth)
+
+        val fridayTrinity = OfficeModel.liturgicalDay(LocalDateTime.of(2026, 8, 21, 15, 5))
+        assertEquals(
+            "Friday in the week following the Eleventh Sunday after Trinity",
+            fridayTrinity.spoken,
+        )
+        assertEquals("trinity", fridayTrinity.seasonKey)
+        assertEquals(11, fridayTrinity.weekNumber)
+        assertEquals("Friday", fridayTrinity.weekday)
+        assertEquals(
+            "Trinity Sunday",
+            OfficeModel.liturgicalDay(LocalDateTime.of(2026, 5, 31, 0, 0)).spoken,
+        )
+        assertEquals(
+            "Easter Day",
+            OfficeModel.liturgicalDay(LocalDateTime.of(2026, 4, 5, 0, 0)).spoken,
+        )
+        assertEquals(
+            "the First Sunday in Advent",
+            OfficeModel.liturgicalDay(LocalDateTime.of(2026, 11, 29, 0, 0)).spoken,
+        )
+        assertEquals(
+            "the Eleventh Sunday after Trinity",
+            OfficeModel.liturgicalDay(LocalDateTime.of(2026, 8, 16, 0, 0)).spoken,
+        )
+
+        val book = loadOfficeBook()
+        assertTrue(book.chapters["trinity"]!!["none"]!!.reference!!.isNotEmpty())
+        assertTrue(book.collects.any { it.id == "trinity-11" })
+
+        val built = OfficeModel.buildOffice(
+            LocalDateTime.of(2026, 8, 21, 15, 5),
+            OfficeModel.hourById("none"),
+            book,
+            "2026-08-21",
+        )
+        assertEquals(
+            "Friday in the week following the Eleventh Sunday after Trinity",
+            built.heading,
+        )
+        assertEquals("None", built.hourShortName)
+        assertEquals("1 Corinthians 6:20", built.chapter!!.reference)
+        assertTrue(built.chapter.text!!.contains("bought at a price"))
+        assertTrue(built.respond!!.respond!!.contains("Buy us back"))
+        assertEquals("cross", built.memorial!!.id)
+        assertTrue(built.collect!!.text.contains("Amen"))
+        assertEquals(4, built.sections.size)
+        assertEquals("The Office", OfficeModel.officeNotificationTitle())
+        assertTrue(OfficeModel.officeNotificationBody(built).contains("THE CHAPTER"))
+        assertTrue(OfficeModel.pluginNotificationTitles().contains("The Office"))
+    }
+
+    private fun loadOfficeBook(): OfficeBook {
+        val raw = javaClass.classLoader!!.getResourceAsStream("office.json")!!
+            .bufferedReader()
+            .use { it.readText() }
+        val json = Gson().fromJson(raw, JsonObject::class.java)
+
+        fun stringList(obj: JsonObject, key: String): List<String>? {
+            val value = obj.get(key) ?: return null
+            if (!value.isJsonArray) return null
+            return value.asJsonArray.map { it.asString }
+        }
+
+        fun week(obj: JsonObject): Int? {
+            val value = obj.get("week") ?: return null
+            if (value.isJsonNull || !value.isJsonPrimitive) return null
+            return value.asInt
+        }
+
+        val chapters = json.getAsJsonObject("chapters").entrySet().associate { (season, hours) ->
+            season to hours.asJsonObject.entrySet().associate { (hourId, entry) ->
+                val item = entry.asJsonObject
+                hourId to ChapterEntry(
+                    reference = item.get("reference")?.asString,
+                    text = item.get("text")?.asString,
+                )
+            }
+        }
+        val responds = json.getAsJsonObject("responds").entrySet().associate { (season, hours) ->
+            season to hours.asJsonObject.entrySet().associate { (hourId, entry) ->
+                val item = entry.asJsonObject
+                hourId to RespondEntry(
+                    respond = item.get("respond")?.asString,
+                    verse = item.get("verse")?.asString,
+                )
+            }
+        }
+        val collects = json.getAsJsonArray("collects").map { element ->
+            val item = element.asJsonObject
+            CollectEntry(
+                id = item.get("id")?.asString ?: "",
+                title = item.get("title")?.asString ?: "",
+                text = item.get("text")?.asString ?: "",
+                hours = stringList(item, "hours"),
+                weekdays = stringList(item, "weekdays"),
+                seasons = stringList(item, "seasons"),
+                week = week(item),
+            )
+        }
+        val memorials = json.getAsJsonArray("memorials").map { element ->
+            val item = element.asJsonObject
+            MemorialEntry(
+                id = item.get("id")?.asString ?: "",
+                title = item.get("title")?.asString ?: "",
+                text = item.get("text")?.asString ?: "",
+                weekdays = stringList(item, "weekdays"),
+            )
+        }
+        return OfficeBook(
+            chapters = chapters,
+            responds = responds,
+            collects = collects,
+            memorials = memorials,
+        )
+    }
 }

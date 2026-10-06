@@ -4,7 +4,7 @@ v1 progress for the Android Liturgy of the Hours. Product decisions: [DESIGN.md]
 
 Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours).
 
-**2 of 10 done. Next: Task 3.**
+**3 of 10 done. Next: Task 4.**
 
 ## Board
 
@@ -12,8 +12,8 @@ Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarc
 |---|---|---|---|
 | 1 | Gradle scaffold and assets | Done 2026-10-05 | `assembleDebug` OK. Package `io.github.mohuddle.hours`, minSdk 29. Device launch not verified. |
 | 2 | Domain: hours, schedule, verses, cache | Done 2026-10-05 | `OfficeModelTest` 7/7. No liturgical calendar. |
-| 3 | Domain: liturgical day and office assembly | Remaining | Next |
-| 4 | Persistence (DataStore + asset JSON) | Remaining | |
+| 3 | Domain: liturgical day and office assembly | Done 2026-10-06 | `OfficeModelTest` 8/8. Easter 2026-04-05. None on 2026-08-21 assembles four sections. |
+| 4 | Persistence (DataStore + asset JSON) | Remaining | Next |
 | 5 | Hours screen | Remaining | |
 | 6 | Office screen and navigation | Remaining | |
 | 7 | Settings screen | Remaining | |
@@ -34,11 +34,11 @@ After a task’s “Done when” is true, mark it on this board, refresh the REA
 
 ## File map
 
-Landed through Task 2: `OfficeModel.kt`, `OfficeModelTest.kt`, assets, Gradle shell. The rest is still planned.
+Landed through Task 3: `OfficeModel.kt`, `OfficeModelTest.kt`, assets, Gradle shell. The rest is still planned.
 
 ```
 app/src/main/java/io/github/mohuddle/hours/
-  domain/OfficeModel.kt          # hours, schedule, verses, cache (Task 2)
+  domain/OfficeModel.kt          # hours, schedule, verses, cache, liturgical day, office (Tasks 2–3)
   data/HoursStore.kt             # DataStore + asset JSON
   notify/AlarmScheduler.kt
   notify/HourReceiver.kt
@@ -96,7 +96,7 @@ All of those tests pass. Liturgical calendar tests are still absent (Task 3).
 
 ---
 
-## Task 3: Domain — liturgical day and office assembly
+## Task 3: Domain — liturgical day and office assembly ✅
 
 **Files:** Extend `OfficeModel.kt` and `OfficeModelTest.kt`. Test resources may load `office.json` from `src/test/resources` or `assets`.
 

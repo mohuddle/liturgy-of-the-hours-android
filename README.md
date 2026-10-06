@@ -10,17 +10,18 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Progress: 2 of 10 v1 tasks.** Next is Task 3 (liturgical day and office assembly). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+**Progress: 3 of 10 v1 tasks.** Next is Task 4 (persistence). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
 
 | Status | Task |
 |---|---|
 | Done | 1. Gradle scaffold and bundled assets |
 | Done | 2. Domain: hours, schedule, verses, cache |
-| Next | 3. Domain: liturgical day and office assembly |
-| Remaining | 4–7 Persistence, Hours, Office, Settings screens |
+| Done | 3. Domain: liturgical day and office assembly |
+| Next | 4. Persistence (DataStore + asset JSON) |
+| Remaining | 5–7 Hours, Office, Settings screens |
 | Remaining | 8–10 Alarms, notifications, device pass |
 
-The installed debug APK is still a titled empty screen. Domain math for the six hours, the daily verse, and reminder cache is in place and unit-tested. There is no Play listing.
+The installed debug APK is still a titled empty screen. Domain math for the six hours, the daily verse, the liturgical day, and office assembly is in place and unit-tested. There is no Play listing.
 
 ---
 
@@ -68,7 +69,7 @@ There is no Play listing. Install from a build of this repository.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 7/7 green (hours, schedule, verses, cache). The APK still shows only the title until the UI tasks land.
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green (hours, schedule, verses, cache, liturgical day, office assembly). The APK still shows only the title until the UI tasks land.
 
 ## Technical specs
 
@@ -80,7 +81,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | compileSdk / targetSdk | 36 |
 | Application id | `io.github.mohuddle.hours` |
 | Domain spec | plugin `Model.js` + `tests/model.test.js` |
-| Domain so far | `OfficeModel.kt` (hours, schedule, verses, cache) |
+| Domain so far | `OfficeModel.kt` (hours, schedule, verses, cache, liturgical day, office) |
 | Assets | `verses.json`, `office.json`, `church_bell.ogg` |
 
 ## Privacy

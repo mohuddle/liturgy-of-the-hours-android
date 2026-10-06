@@ -2,7 +2,10 @@ package io.github.mohuddle.hours.domain
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+import java.util.Locale
 
 data class Hour(
     val id: String,
@@ -54,6 +57,72 @@ data class CacheState(
     val reference: String = "",
     val text: String = "",
     val lastNotified: Map<String, String> = emptyMap(),
+)
+
+data class LiturgicalDay(
+    val date: String,
+    val weekday: String,
+    val season: String,
+    val seasonKey: String,
+    val weekNumber: Int?,
+    val feast: String?,
+    val spoken: String,
+)
+
+data class ChapterEntry(
+    val reference: String? = null,
+    val text: String? = null,
+)
+
+data class RespondEntry(
+    val respond: String? = null,
+    val verse: String? = null,
+)
+
+data class CollectEntry(
+    val id: String = "",
+    val title: String = "",
+    val text: String = "",
+    val hours: List<String>? = null,
+    val weekdays: List<String>? = null,
+    val seasons: List<String>? = null,
+    val week: Int? = null,
+)
+
+data class MemorialEntry(
+    val id: String = "",
+    val title: String = "",
+    val text: String = "",
+    val weekdays: List<String>? = null,
+)
+
+data class OfficeBook(
+    val chapters: Map<String, Map<String, ChapterEntry>> = emptyMap(),
+    val responds: Map<String, Map<String, RespondEntry>> = emptyMap(),
+    val collects: List<CollectEntry> = emptyList(),
+    val memorials: List<MemorialEntry> = emptyList(),
+)
+
+data class OfficeSection(
+    val label: String,
+    val body: String,
+)
+
+data class BuiltOffice(
+    val spoken: String,
+    val heading: String,
+    val feast: String?,
+    val seasonKey: String,
+    val weekNumber: Int?,
+    val weekday: String,
+    val hourId: String,
+    val hourName: String,
+    val hourShortName: String,
+    val chapter: ChapterEntry?,
+    val respond: RespondEntry?,
+    val collect: CollectEntry?,
+    val memorial: MemorialEntry?,
+    val sections: List<OfficeSection>,
 )
 
 object OfficeModel {
@@ -424,5 +493,390 @@ object OfficeModel {
         if (VERSES.isEmpty()) return ""
         val idx = maxOf(0, position) % VERSES.size
         return VERSES[idx]
+    }
+
+    // Anonymous Gregorian computus. Month from the algorithm is 1-based.
+    fun easterDate(year: Int): LocalDate {
+        val a = year % 19
+        val b = year / 100
+        val c = year % 100
+        val d = b / 4
+        val e = b % 4
+        val f = (b + 8) / 25
+        val g = (b - f + 1) / 3
+        val h = (19 * a + b - d - g + 15) % 30
+        val i = c / 4
+        val k = c % 4
+        val l = (32 + 2 * e + 2 * i - h - k) % 7
+        val m = (a + 11 * h + 22 * l) / 451
+        val monthDay = h + l - 7 * m + 114
+        val month = monthDay / 31
+        val day = (monthDay % 31) + 1
+        return LocalDate.of(year, month, day)
+    }
+
+    fun liturgicalDay(now: LocalDateTime): LiturgicalDay {
+        val d = now.toLocalDate()
+        val year = d.year
+        val notes = yearAnchors(year)
+        val christmas = LocalDate.of(year, 12, 25)
+        val epiphany = LocalDate.of(year, 1, 6)
+        val feast = RED_LETTER["${d.monthValue}-${d.dayOfMonth}"]
+        val weekday = weekdayName(d)
+        var season = "the Christian year"
+        var seasonKey = "trinity"
+        var weekNumber: Int? = null
+        fun cmp(a: LocalDate, b: LocalDate): Int = daysBetween(b, a)
+
+        if (cmp(d, christmas) == 0) {
+            season = "Christmas Day"
+            seasonKey = "christmas"
+        } else if (cmp(d, LocalDate.of(year, 12, 24)) == 0) {
+            season = "Christmas Eve"
+            seasonKey = "christmas"
+        } else if (cmp(d, LocalDate.of(year, 12, 26)) >= 0 || cmp(d, LocalDate.of(year, 1, 5)) <= 0) {
+            season = "Christmastide"
+            seasonKey = "christmas"
+        } else if (cmp(d, epiphany) == 0) {
+            season = "the Epiphany of our Lord"
+            seasonKey = "epiphany"
+            weekNumber = 0
+        } else if (cmp(d, epiphany) > 0 && cmp(d, notes.ash) < 0) {
+            var firstEpiphany = addDays(epiphany, (7 - jsDay(epiphany)) % 7)
+            if (cmp(firstEpiphany, epiphany) <= 0) firstEpiphany = addDays(firstEpiphany, 7)
+            val nEp = nthSundayAfter(addDays(firstEpiphany, -7), d)
+            seasonKey = "epiphany"
+            weekNumber = maxOf(nEp, 1)
+            season = if (jsDay(d) == 0) {
+                "the ${ordinal(nEp)} Sunday after Epiphany"
+            } else {
+                "the week following the ${ordinal(maxOf(nEp, 1))} Sunday after Epiphany"
+            }
+        } else if (cmp(d, notes.ash) == 0) {
+            season = "Ash Wednesday"
+            seasonKey = "lent"
+            weekNumber = 0
+        } else if (cmp(d, notes.ash) > 0 && cmp(d, notes.palm) < 0) {
+            var firstLent = addDays(notes.ash, (7 - jsDay(notes.ash)) % 7)
+            if (cmp(firstLent, notes.ash) == 0) firstLent = addDays(firstLent, 7)
+            seasonKey = "lent"
+            if (cmp(d, firstLent) < 0) {
+                season = "the week of Ash Wednesday"
+                weekNumber = 0
+            } else if (jsDay(d) == 0) {
+                val lentSunday = Math.floorDiv(daysBetween(firstLent, d), 7) + 1
+                weekNumber = lentSunday
+                season = "the ${ordinal(lentSunday)} Sunday in Lent"
+            } else {
+                val lentWeek = maxOf(nthSundayAfter(firstLent, d), 1)
+                weekNumber = lentWeek
+                season = "the week following the ${ordinal(lentWeek)} Sunday in Lent"
+            }
+        } else if (cmp(d, notes.palm) == 0) {
+            season = "Palm Sunday"
+            seasonKey = "holyweek"
+        } else if (cmp(d, notes.palm) > 0 && cmp(d, notes.easter) < 0) {
+            season = "Holy Week"
+            seasonKey = "holyweek"
+        } else if (cmp(d, notes.easter) == 0) {
+            season = "Easter Day"
+            seasonKey = "easter"
+            weekNumber = 0
+        } else if (cmp(d, notes.easter) > 0 && cmp(d, notes.ascension) < 0) {
+            val nEaster = nthSundayAfter(notes.easter, d)
+            seasonKey = "easter"
+            weekNumber = nEaster
+            season = if (jsDay(d) == 0) {
+                "the ${ordinal(nEaster)} Sunday after Easter"
+            } else if (nEaster != 0) {
+                "the week following the ${ordinal(maxOf(nEaster, 1))} Sunday after Easter"
+            } else {
+                "Easter Week"
+            }
+        } else if (cmp(d, notes.ascension) == 0) {
+            season = "Ascension Day"
+            seasonKey = "ascension"
+        } else if (cmp(d, notes.ascension) > 0 && cmp(d, notes.pentecost) < 0) {
+            season = "the week following Ascension Day"
+            seasonKey = "ascension"
+        } else if (cmp(d, notes.pentecost) == 0) {
+            season = "Whitsunday, the Feast of Pentecost"
+            seasonKey = "pentecost"
+        } else if (cmp(d, notes.pentecost) > 0 && cmp(d, notes.trinity) < 0) {
+            season = "the week following Whitsunday"
+            seasonKey = "pentecost"
+        } else if (cmp(d, notes.trinity) == 0) {
+            season = "Trinity Sunday"
+            seasonKey = "trinity"
+            weekNumber = 0
+        } else if (cmp(d, notes.trinity) > 0 && cmp(d, notes.advent) < 0) {
+            val nTrin = nthSundayAfter(notes.trinity, d)
+            seasonKey = "trinity"
+            weekNumber = nTrin
+            season = if (jsDay(d) == 0) {
+                "the ${ordinal(nTrin)} Sunday after Trinity"
+            } else {
+                "the week following the ${ordinal(maxOf(nTrin, 1))} Sunday after Trinity"
+            }
+        } else if (cmp(d, notes.advent) >= 0 && cmp(d, christmas) < 0) {
+            val nAdv = Math.floorDiv(daysBetween(notes.advent, d), 7) + 1
+            seasonKey = "advent"
+            weekNumber = nAdv
+            season = if (jsDay(d) == 0) {
+                "the ${ordinal(nAdv)} Sunday in Advent"
+            } else {
+                "the week following the ${ordinal(nAdv)} Sunday in Advent"
+            }
+        }
+
+        val spoken = if (
+            season == "Holy Week" || season == "Easter Week" || season == "Christmastide" ||
+            season.startsWith("the week")
+        ) {
+            "$weekday in $season"
+        } else if (
+            season.contains("Day") || season.startsWith("Ash") ||
+            season.startsWith("Whitsunday") || season.contains("Eve")
+        ) {
+            if (jsDay(d) == 0 || season.contains("Day")) season else "$weekday, $season"
+        } else if (jsDay(d) == 0) {
+            season
+        } else {
+            "$weekday in $season"
+        }
+
+        return LiturgicalDay(
+            date = isoDate(d.atStartOfDay()),
+            weekday = weekday,
+            season = season,
+            seasonKey = seasonKey,
+            weekNumber = weekNumber,
+            feast = feast,
+            spoken = spoken,
+        )
+    }
+
+    fun officeNotificationTitle(): String = "The Office"
+
+    fun pluginNotificationTitles(): List<String> =
+        hourNotificationTitles() + officeNotificationTitle()
+
+    fun buildOffice(now: LocalDateTime, hour: Hour?, book: OfficeBook?, salt: String?): BuiltOffice {
+        val day = liturgicalDay(now)
+        val resolved = hour ?: hourById("morning")!!
+        val chapter = lookupHourEntry(book?.chapters, day.seasonKey, resolved.id)
+        val respond = lookupHourEntry(book?.responds, day.seasonKey, resolved.id)
+        val collect = pickCollect(book, day, resolved, salt)
+        val memorial = pickMemorial(book, day)
+        var heading = day.spoken
+        if (day.feast != null) heading += ", ${day.feast}"
+        val sections = mutableListOf<OfficeSection>()
+        if (chapter != null) {
+            val reference = chapter.reference
+            val text = chapter.text ?: ""
+            val body = if (!reference.isNullOrEmpty()) "$reference\n$text" else text
+            sections.add(OfficeSection(label = "The Chapter", body = body))
+        }
+        if (respond != null) {
+            val lines = listOf(
+                respond.respond,
+                respond.verse,
+                "Glory be to the Father, and to the Son, and to the Holy Spirit.",
+            ).filter { !it.isNullOrEmpty() }
+            sections.add(OfficeSection(label = "The Short Respond", body = lines.joinToString("\n")))
+        }
+        if (collect != null) {
+            sections.add(OfficeSection(label = "Collect", body = collect.text))
+        }
+        if (memorial != null) {
+            val title = memorial.title
+            val text = memorial.text
+            val body = if (title.isNotEmpty()) "$title\n$text" else text
+            sections.add(OfficeSection(label = "Memorial Collect", body = body))
+        }
+        return BuiltOffice(
+            spoken = day.spoken,
+            heading = heading,
+            feast = day.feast,
+            seasonKey = day.seasonKey,
+            weekNumber = day.weekNumber,
+            weekday = day.weekday,
+            hourId = resolved.id,
+            hourName = resolved.name,
+            hourShortName = resolved.shortName,
+            chapter = chapter,
+            respond = respond,
+            collect = collect,
+            memorial = memorial,
+            sections = sections,
+        )
+    }
+
+    fun officeNotificationBody(office: BuiltOffice?): String {
+        if (office == null) return "The Office is not ready yet."
+        val lines = mutableListOf(office.heading)
+        if (office.hourName.isNotEmpty()) lines.add(office.hourName)
+        for (section in office.sections) {
+            lines.add("")
+            lines.add(section.label.uppercase(Locale.ROOT))
+            lines.add(section.body)
+        }
+        return plainText(lines.joinToString("\n"), MAX_NOTIFY)
+    }
+
+    private data class YearAnchors(
+        val easter: LocalDate,
+        val ash: LocalDate,
+        val palm: LocalDate,
+        val ascension: LocalDate,
+        val pentecost: LocalDate,
+        val trinity: LocalDate,
+        val advent: LocalDate,
+    )
+
+    private val ORDINALS = listOf(
+        "", "First", "Second", "Third", "Fourth", "Fifth", "Sixth", "Seventh",
+        "Eighth", "Ninth", "Tenth", "Eleventh", "Twelfth", "Thirteenth",
+        "Fourteenth", "Fifteenth", "Sixteenth", "Seventeenth", "Eighteenth",
+        "Nineteenth", "Twentieth", "Twenty-first", "Twenty-second",
+        "Twenty-third", "Twenty-fourth", "Twenty-fifth", "Twenty-sixth",
+        "Twenty-seventh",
+    )
+
+    private val WEEKDAYS = listOf(
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+    )
+
+    private val RED_LETTER = mapOf(
+        "1-1" to "the Circumcision of Christ",
+        "1-6" to "the Epiphany of our Lord",
+        "1-25" to "the Conversion of Saint Paul",
+        "2-2" to "the Presentation of Christ in the Temple",
+        "2-24" to "Saint Matthias the Apostle",
+        "3-25" to "the Annunciation of the Blessed Virgin Mary",
+        "4-25" to "Saint Mark the Evangelist",
+        "6-11" to "Saint Barnabas the Apostle",
+        "6-24" to "the Nativity of Saint John the Baptist",
+        "6-29" to "Saint Peter the Apostle",
+        "7-25" to "Saint James the Apostle",
+        "8-6" to "the Transfiguration of our Lord",
+        "8-15" to "the feast of Saint Mary the Virgin",
+        "8-24" to "Saint Bartholomew the Apostle",
+        "9-21" to "Saint Matthew the Apostle",
+        "9-29" to "Saint Michael and All Angels",
+        "10-18" to "Saint Luke the Evangelist",
+        "10-28" to "Saint Simon and Saint Jude, Apostles",
+        "11-1" to "All Saints",
+        "11-30" to "Saint Andrew the Apostle",
+        "12-21" to "Saint Thomas the Apostle",
+        "12-25" to "the Nativity of our Lord",
+        "12-26" to "Saint Stephen, Deacon and Martyr",
+        "12-27" to "Saint John the Apostle and Evangelist",
+        "12-28" to "the Holy Innocents",
+    )
+
+    private val YEAR_NOTES = mapOf(
+        2026 to YearAnchors(
+            easter = LocalDate.of(2026, 4, 5),
+            ash = LocalDate.of(2026, 2, 18),
+            palm = LocalDate.of(2026, 3, 29),
+            ascension = LocalDate.of(2026, 5, 14),
+            pentecost = LocalDate.of(2026, 5, 24),
+            trinity = LocalDate.of(2026, 5, 31),
+            advent = LocalDate.of(2026, 11, 29),
+        ),
+    )
+
+    private fun jsDay(d: LocalDate): Int = d.dayOfWeek.value % 7
+
+    private fun addDays(d: LocalDate, n: Int): LocalDate = d.plusDays(n.toLong())
+
+    private fun daysBetween(a: LocalDate, b: LocalDate): Int =
+        ChronoUnit.DAYS.between(a, b).toInt()
+
+    private fun sundayOnOrBefore(d: LocalDate): LocalDate = addDays(d, -jsDay(d))
+
+    private fun nthSundayAfter(anchor: LocalDate, d: LocalDate): Int =
+        Math.floorDiv(daysBetween(anchor, sundayOnOrBefore(d)), 7)
+
+    private fun weekdayName(d: LocalDate): String = WEEKDAYS[(jsDay(d) + 6) % 7]
+
+    private fun ordinal(n: Int): String = ORDINALS.getOrElse(n) { "undefined" }
+
+    private fun adventSunday(year: Int): LocalDate {
+        val start = LocalDate.of(year, 11, 27)
+        for (i in 0 until 7) {
+            val candidate = addDays(start, i)
+            if (jsDay(candidate) == 0) return candidate
+        }
+        return start
+    }
+
+    private fun yearAnchors(year: Int): YearAnchors {
+        YEAR_NOTES[year]?.let { return it }
+        val easter = easterDate(year)
+        return YearAnchors(
+            easter = easter,
+            ash = addDays(easter, -46),
+            palm = addDays(easter, -7),
+            ascension = addDays(easter, 39),
+            pentecost = addDays(easter, 49),
+            trinity = addDays(easter, 56),
+            advent = adventSunday(year),
+        )
+    }
+
+    private fun <T> lookupHourEntry(
+        maps: Map<String, Map<String, T>>?,
+        seasonKey: String,
+        hourId: String,
+    ): T? {
+        if (maps == null) return null
+        val season = maps[seasonKey] ?: maps["trinity"] ?: emptyMap()
+        season[hourId]?.let { return it }
+        season["default"]?.let { return it }
+        val trinity = maps["trinity"] ?: return null
+        return trinity[hourId] ?: trinity["default"]
+    }
+
+    private fun collectMatches(collect: CollectEntry, day: LiturgicalDay, hourId: String): Boolean {
+        if (!collect.hours.isNullOrEmpty() && hourId !in collect.hours) return false
+        if (!collect.weekdays.isNullOrEmpty() && day.weekday !in collect.weekdays) return false
+        if (!collect.seasons.isNullOrEmpty() && day.seasonKey !in collect.seasons) return false
+        if (collect.week != null && collect.week != day.weekNumber) return false
+        return true
+    }
+
+    private fun pickCollect(
+        book: OfficeBook?,
+        day: LiturgicalDay,
+        hour: Hour,
+        salt: String?,
+    ): CollectEntry? {
+        val pool = mutableListOf<CollectEntry>()
+        for (item in book?.collects ?: emptyList()) {
+            if (collectMatches(item, day, hour.id)) pool.add(item)
+        }
+        if (hour.prayer.isNotEmpty()) {
+            pool.add(
+                CollectEntry(
+                    id = "${hour.id}-hour",
+                    title = hour.name,
+                    text = hour.prayer,
+                ),
+            )
+        }
+        if (pool.isEmpty()) return null
+        val key = (if (salt.isNullOrEmpty()) day.date else salt) + hour.id + "collect"
+        return pool[nextPosition(-1, pool.size, "random", key)]
+    }
+
+    private fun pickMemorial(book: OfficeBook?, day: LiturgicalDay): MemorialEntry? {
+        var fallback: MemorialEntry? = null
+        for (item in book?.memorials ?: emptyList()) {
+            if (!item.weekdays.isNullOrEmpty() && day.weekday in item.weekdays) return item
+            if (item.weekdays.isNullOrEmpty()) fallback = item
+        }
+        return fallback
     }
 }
