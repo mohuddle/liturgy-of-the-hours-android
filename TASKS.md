@@ -4,7 +4,7 @@ v1 progress for the Android Liturgy of the Hours. Product decisions: [DESIGN.md]
 
 Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours).
 
-**4 of 10 done. Next: Task 5.**
+**5 of 10 done. Next: Task 6.**
 
 ## Board
 
@@ -14,7 +14,7 @@ Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarc
 | 2 | Domain: hours, schedule, verses, cache | Done 2026-10-05 | `OfficeModelTest` 7/7. No liturgical calendar. |
 | 3 | Domain: liturgical day and office assembly | Done 2026-10-06 | `OfficeModelTest` 8/8. Easter 2026-04-05. None on 2026-08-21 assembles four sections. |
 | 4 | Persistence (DataStore + asset JSON) | Done 2026-10-06 | `HoursStoreTest` 4/4. Defaults, one verse per day, `lastNotified`, corrupt JSON. |
-| 5 | Hours screen | Remaining | Next |
+| 5 | Hours screen | Done 2026-10-06 | Six defaults, Genesis 1:1 (BSB), Terce accent at 09:05 on an API 35 emulator. Bell and gear log only. |
 | 6 | Office screen and navigation | Remaining | |
 | 7 | Settings screen | Remaining | |
 | 8 | Alarm scheduling | Remaining | |
@@ -34,7 +34,7 @@ After a task’s “Done when” is true, mark it on this board, refresh the REA
 
 ## File map
 
-Landed through Task 4: `OfficeModel.kt`, `HoursStore.kt`, their tests, assets, Gradle shell. The rest is still planned.
+Landed through Task 5: domain, `HoursStore`, and the Hours screen (`HoursScreen`, `JerusalemCross`, theme, `MainActivity`). Office, Settings, alarms, and notifications are still planned.
 
 ```
 app/src/main/java/io/github/mohuddle/hours/
@@ -129,7 +129,7 @@ Full `OfficeModelTest` green. Domain is complete.
 
 ---
 
-## Task 5: Hours screen
+## Task 5: Hours screen ✅
 
 **Files:** Create `ui/theme/Theme.kt`, `ui/JerusalemCross.kt`, `ui/HoursScreen.kt`, wire `MainActivity` to Hours with fake or real `HoursStore`.
 

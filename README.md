@@ -10,7 +10,7 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Progress: 4 of 10 v1 tasks.** Next is Task 5 (Hours screen). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+**Progress: 5 of 10 v1 tasks.** Next is Task 6 (Office screen and navigation). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
 
 | Status | Task |
 |---|---|
@@ -18,11 +18,12 @@ This is the phone app. The desktop plugin stays in its own repository. The two d
 | Done | 2. Domain: hours, schedule, verses, cache |
 | Done | 3. Domain: liturgical day and office assembly |
 | Done | 4. Persistence (DataStore + asset JSON) |
-| Next | 5. Hours screen |
-| Remaining | 6–7 Office and Settings screens |
+| Done | 5. Hours screen |
+| Next | 6. Office screen and navigation |
+| Remaining | 7. Settings screen |
 | Remaining | 8–10 Alarms, notifications, device pass |
 
-The installed debug APK is still a titled empty screen. Domain math and `HoursStore` (settings, one verse per day, office book) are unit-tested. The store is not wired to the UI yet. There is no Play listing.
+The debug APK opens on the Hours screen: six default hours, the current hour in accent, today’s BSB verse, and bell and gear buttons that log until navigation lands. Office and Settings are not built yet. There is no Play listing.
 
 ---
 
@@ -70,7 +71,7 @@ There is no Play listing. Install from a build of this repository.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 4/4 green (defaults, one verse per day, `lastNotified`, corrupt JSON). The APK still shows only the title until the UI tasks land.
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 4/4 green (defaults, one verse per day, `lastNotified`, corrupt JSON). On an API 35 emulator at 09:05 the Hours screen shows Lauds 06:00 through Vespers 18:00, Terce in accent, and Genesis 1:1 (BSB).
 
 ## Technical specs
 
@@ -84,6 +85,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | Domain spec | plugin `Model.js` + `tests/model.test.js` |
 | Domain | `OfficeModel.kt` (hours, schedule, verses, cache, liturgical day, office) |
 | Persistence | `HoursStore.kt` (DataStore preferences + `verses.json` / `office.json`) |
+| Hours screen | `HoursScreen.kt` (six hours, Jerusalem cross, today’s verse). Bell and gear log until Task 6. |
 | Assets | `verses.json`, `office.json`, `church_bell.ogg` |
 
 ## Privacy
