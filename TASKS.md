@@ -4,7 +4,7 @@ v1 progress for the Android Liturgy of the Hours. Product decisions: [DESIGN.md]
 
 Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours).
 
-**3 of 10 done. Next: Task 4.**
+**4 of 10 done. Next: Task 5.**
 
 ## Board
 
@@ -13,8 +13,8 @@ Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarc
 | 1 | Gradle scaffold and assets | Done 2026-10-05 | `assembleDebug` OK. Package `io.github.mohuddle.hours`, minSdk 29. Device launch not verified. |
 | 2 | Domain: hours, schedule, verses, cache | Done 2026-10-05 | `OfficeModelTest` 7/7. No liturgical calendar. |
 | 3 | Domain: liturgical day and office assembly | Done 2026-10-06 | `OfficeModelTest` 8/8. Easter 2026-04-05. None on 2026-08-21 assembles four sections. |
-| 4 | Persistence (DataStore + asset JSON) | Remaining | Next |
-| 5 | Hours screen | Remaining | |
+| 4 | Persistence (DataStore + asset JSON) | Done 2026-10-06 | `HoursStoreTest` 4/4. Defaults, one verse per day, `lastNotified`, corrupt JSON. |
+| 5 | Hours screen | Remaining | Next |
 | 6 | Office screen and navigation | Remaining | |
 | 7 | Settings screen | Remaining | |
 | 8 | Alarm scheduling | Remaining | |
@@ -34,12 +34,12 @@ After a task’s “Done when” is true, mark it on this board, refresh the REA
 
 ## File map
 
-Landed through Task 3: `OfficeModel.kt`, `OfficeModelTest.kt`, assets, Gradle shell. The rest is still planned.
+Landed through Task 4: `OfficeModel.kt`, `HoursStore.kt`, their tests, assets, Gradle shell. The rest is still planned.
 
 ```
 app/src/main/java/io/github/mohuddle/hours/
   domain/OfficeModel.kt          # hours, schedule, verses, cache, liturgical day, office (Tasks 2–3)
-  data/HoursStore.kt             # DataStore + asset JSON
+  data/HoursStore.kt             # DataStore + asset JSON (Task 4)
   notify/AlarmScheduler.kt
   notify/HourReceiver.kt
   notify/BootReceiver.kt
@@ -115,7 +115,7 @@ Full `OfficeModelTest` green. Domain is complete.
 
 ---
 
-## Task 4: Persistence
+## Task 4: Persistence ✅
 
 **Files:** Create `data/HoursStore.kt` (DataStore preferences + read `verses.json` / `office.json` from assets). Tests with a fake/in-memory DataStore or a JVM-friendly wrapper.
 

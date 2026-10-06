@@ -10,18 +10,19 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Progress: 3 of 10 v1 tasks.** Next is Task 4 (persistence). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+**Progress: 4 of 10 v1 tasks.** Next is Task 5 (Hours screen). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
 
 | Status | Task |
 |---|---|
 | Done | 1. Gradle scaffold and bundled assets |
 | Done | 2. Domain: hours, schedule, verses, cache |
 | Done | 3. Domain: liturgical day and office assembly |
-| Next | 4. Persistence (DataStore + asset JSON) |
-| Remaining | 5–7 Hours, Office, Settings screens |
+| Done | 4. Persistence (DataStore + asset JSON) |
+| Next | 5. Hours screen |
+| Remaining | 6–7 Office and Settings screens |
 | Remaining | 8–10 Alarms, notifications, device pass |
 
-The installed debug APK is still a titled empty screen. Domain math for the six hours, the daily verse, the liturgical day, and office assembly is in place and unit-tested. There is no Play listing.
+The installed debug APK is still a titled empty screen. Domain math and `HoursStore` (settings, one verse per day, office book) are unit-tested. The store is not wired to the UI yet. There is no Play listing.
 
 ---
 
@@ -69,7 +70,7 @@ There is no Play listing. Install from a build of this repository.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green (hours, schedule, verses, cache, liturgical day, office assembly). The APK still shows only the title until the UI tasks land.
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 4/4 green (defaults, one verse per day, `lastNotified`, corrupt JSON). The APK still shows only the title until the UI tasks land.
 
 ## Technical specs
 
@@ -81,12 +82,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | compileSdk / targetSdk | 36 |
 | Application id | `io.github.mohuddle.hours` |
 | Domain spec | plugin `Model.js` + `tests/model.test.js` |
-| Domain so far | `OfficeModel.kt` (hours, schedule, verses, cache, liturgical day, office) |
+| Domain | `OfficeModel.kt` (hours, schedule, verses, cache, liturgical day, office) |
+| Persistence | `HoursStore.kt` (DataStore preferences + `verses.json` / `office.json`) |
 | Assets | `verses.json`, `office.json`, `church_bell.ogg` |
 
 ## Privacy
 
-The app does not need the internet. Scripture and office texts ship in the APK. Settings will stay in app-private DataStore. There is no account, no crash reporter, and no analytics.
+The app does not need the internet. Scripture and office texts ship in the APK. Hour settings and the daily verse are stored in app-private DataStore. There is no account, no crash reporter, and no analytics.
 
 ## Security
 
