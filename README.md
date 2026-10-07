@@ -86,7 +86,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | Domain spec | plugin `Model.js` + `tests/model.test.js` |
 | Domain | `OfficeModel.kt` (hours, schedule, verses, cache, liturgical day, office) |
 | Persistence | `HoursStore.kt` (DataStore preferences + `verses.json` / `office.json`) |
-| Hours / Office | `HoursApp.kt` NavHost: `hours`, `office/{hourId}`, settings stub. `OfficeScreen.kt` heading + four sections. |
+| Hours / Office / Settings | `HoursApp.kt` NavHost: `hours`, `office/{hourId}`, `settings`. `SettingsScreen.kt` reminders, enable, 24h time picker. |
 | Assets | `verses.json`, `office.json`, `church_bell.ogg` |
 
 ## Privacy
