@@ -10,7 +10,7 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Progress: 7 of 10 v1 tasks.** Next is Task 8 (Alarm scheduling). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+**Progress: 8 of 10 v1 tasks.** Next is Task 9 (Notifications, receiver, permission CTAs). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
 
 | Status | Task |
 |---|---|
@@ -21,8 +21,9 @@ This is the phone app. The desktop plugin stays in its own repository. The two d
 | Done | 5. Hours screen |
 | Done | 6. Office screen and navigation |
 | Done | 7. Settings screen |
-| Next | 8. Alarm scheduling |
-| Remaining | 9–10 Notifications, device pass |
+| Done | 8. Alarm scheduling |
+| Next | 9. Notifications, receiver, permission CTAs |
+| Remaining | 10. Device pass |
 
 The debug APK opens on the Hours screen: six hours, the current hour in accent, and today’s BSB verse. The bell opens the featured hour’s office; tapping a row opens that hour. Gear opens Settings (reminders, enable, and time per hour). There is no Play listing.
 
@@ -72,7 +73,7 @@ There is no Play listing. Install from a build of this repository.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 6/6 green (defaults, verse rotation, `lastNotified`, corrupt JSON, Prime 07:30 across process, disable hour). `OfficeViewTest` is 4/4 green. On an API 35 emulator: Settings sets Prime to 07:30 and turns Terce off; Hours mutes Terce; force-stop then reopen still shows 07:30.
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` 8/8. `HoursStoreTest` 6/6. `OfficeViewTest` 4/4. `AlarmSchedulerTest` 5/5 (six clocks, Terce off → five, evening after 18:00 tomorrow, boot/time/timezone). Manifest has `SCHEDULE_EXACT_ALARM` and `RECEIVE_BOOT_COMPLETED`. Hour fire still does not post a notification (Task 9).
 
 ## Technical specs
 
@@ -87,6 +88,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | Domain | `OfficeModel.kt` (hours, schedule, verses, cache, liturgical day, office) |
 | Persistence | `HoursStore.kt` (DataStore preferences + `verses.json` / `office.json`) |
 | Hours / Office / Settings | `HoursApp.kt` NavHost: `hours`, `office/{hourId}`, `settings`. `SettingsScreen.kt` reminders, enable, 24h time picker. |
+| Alarms | `AlarmScheduler.kt` `setAlarmClock` per enabled hour. Reschedule on launch, settings, boot, time/timezone. |
 | Assets | `verses.json`, `office.json`, `church_bell.ogg` |
 
 ## Privacy
@@ -95,7 +97,7 @@ The app does not need the internet. Scripture and office texts ship in the APK. 
 
 ## Security
 
-Sideload only in v1. The scaffold declares no `INTERNET` permission. Hour reminders will use `POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`, `RECEIVE_BOOT_COMPLETED`, and `VIBRATE` when those tasks land. Exact-alarm and notification access fail closed: Settings will send you to the system pages rather than falling back to inexact alarms.
+Sideload only in v1. The scaffold declares no `INTERNET` permission. Exact clocks use `SCHEDULE_EXACT_ALARM` and `RECEIVE_BOOT_COMPLETED`. `POST_NOTIFICATIONS` and `VIBRATE` land with Task 9. Exact-alarm and notification access fail closed: Settings will send you to the system pages rather than falling back to inexact alarms.
 
 ## License
 

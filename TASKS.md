@@ -4,7 +4,7 @@ v1 progress for the Android Liturgy of the Hours. Product decisions: [DESIGN.md]
 
 Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours).
 
-**7 of 10 done. Next: Task 8.**
+**8 of 10 done. Next: Task 9.**
 
 ## Board
 
@@ -17,7 +17,7 @@ Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarc
 | 5 | Hours screen | Done 2026-10-06 | Six defaults, Genesis 1:1 (BSB), Terce accent at 09:05 on an API 35 emulator. Bell and gear log only. |
 | 6 | Office screen and navigation | Done 2026-10-07 | Bell opens featured hour; Sext row opens Sext. Four sections on API 35 emulator (today). Settings is a stub. |
 | 7 | Settings screen | Done 2026-10-07 | Prime 07:30 and Terce off survive force-stop. Hours mutes Terce. `onScheduleChanged` stub. |
-| 8 | Alarm scheduling | Remaining | |
+| 8 | Alarm scheduling | Done 2026-10-07 | `AlarmSchedulerTest` 5/5. Six clocks; Terce off → five; 18:00 evening tomorrow; boot/time/timezone reschedule. `SCHEDULE_EXACT_ALARM`. |
 | 9 | Notifications, receiver, permission CTAs | Remaining | |
 | 10 | Device pass (emulator / G5) | Remaining | |
 
@@ -34,7 +34,7 @@ After a task’s “Done when” is true, mark it on this board, refresh the REA
 
 ## File map
 
-Landed through Task 7: domain, `HoursStore`, Hours, Office, Settings. Alarms and notifications are still planned.
+Landed through Task 8: domain, store, Hours, Office, Settings, `AlarmScheduler` + boot/time receivers. Notifications are still planned.
 
 ```
 app/src/main/java/io/github/mohuddle/hours/
@@ -169,7 +169,7 @@ Full `OfficeModelTest` green. Domain is complete.
 
 ---
 
-## Task 8: Alarm scheduling
+## Task 8: Alarm scheduling ✅
 
 **Files:** Create `notify/AlarmScheduler.kt`, `notify/BootReceiver.kt`, `notify/TimeChangeReceiver.kt`. Test `AlarmSchedulerTest` against a fake `AlarmClock` wrapper (no real AlarmManager in unit tests).
 

@@ -15,6 +15,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import io.github.mohuddle.hours.data.HoursSnapshot
 import io.github.mohuddle.hours.data.hoursStore
+import io.github.mohuddle.hours.notify.AlarmScheduler
+import io.github.mohuddle.hours.notify.AndroidAlarmClock
 import io.github.mohuddle.hours.ui.HoursApp
 import io.github.mohuddle.hours.ui.theme.HoursTheme
 import java.time.LocalDateTime
@@ -23,13 +25,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val store = hoursStore(this)
+        val scheduler = AlarmScheduler(AndroidAlarmClock(this))
         setContent {
             HoursTheme {
                 var snapshot by remember { mutableStateOf<HoursSnapshot?>(null) }
                 var now by remember { mutableStateOf(LocalDateTime.now()) }
                 LaunchedEffect(Unit) {
                     now = LocalDateTime.now()
-                    snapshot = store.load(now)
+                    val loaded = store.load(now)
+                    scheduler.reschedule(now, loaded)
+                    snapshot = loaded
                 }
                 val loaded = snapshot
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -41,7 +46,9 @@ class MainActivity : ComponentActivity() {
                             now = now,
                             onSaveSettings = { notificationsEnabled, hours ->
                                 store.saveSettings(notificationsEnabled, hours)
-                                store.load(now)
+                                val updated = store.load(now)
+                                scheduler.reschedule(now, updated)
+                                updated
                             },
                         )
                     }
