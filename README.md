@@ -10,7 +10,7 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Progress: 5 of 10 v1 tasks.** Next is Task 6 (Office screen and navigation). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+**Progress: 6 of 10 v1 tasks.** Next is Task 7 (Settings screen). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
 
 | Status | Task |
 |---|---|
@@ -19,11 +19,11 @@ This is the phone app. The desktop plugin stays in its own repository. The two d
 | Done | 3. Domain: liturgical day and office assembly |
 | Done | 4. Persistence (DataStore + asset JSON) |
 | Done | 5. Hours screen |
-| Next | 6. Office screen and navigation |
-| Remaining | 7. Settings screen |
+| Done | 6. Office screen and navigation |
+| Next | 7. Settings screen |
 | Remaining | 8–10 Alarms, notifications, device pass |
 
-The debug APK opens on the Hours screen: six default hours, the current hour in accent, today’s BSB verse, and bell and gear buttons that log until navigation lands. Office and Settings are not built yet. There is no Play listing.
+The debug APK opens on the Hours screen: six default hours, the current hour in accent, and today’s BSB verse. The bell opens the featured hour’s office; tapping a row opens that hour. Gear opens a Settings stub (fields are Task 7). There is no Play listing.
 
 ---
 
@@ -71,7 +71,7 @@ There is no Play listing. Install from a build of this repository.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 4/4 green (defaults, one verse per day, `lastNotified`, corrupt JSON). On an API 35 emulator at 09:05 the Hours screen shows Lauds 06:00 through Vespers 18:00, Terce in accent, and Genesis 1:1 (BSB).
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 4/4 green. `OfficeViewTest` is 4/4 green (None fixture, Sext, missing book, featured hour). On an API 35 emulator the Hours screen lists the six hours; tapping Sext opens Sext’s office with heading and four sections; the bell opens the featured hour; Back returns to Hours.
 
 ## Technical specs
 
@@ -85,7 +85,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | Domain spec | plugin `Model.js` + `tests/model.test.js` |
 | Domain | `OfficeModel.kt` (hours, schedule, verses, cache, liturgical day, office) |
 | Persistence | `HoursStore.kt` (DataStore preferences + `verses.json` / `office.json`) |
-| Hours screen | `HoursScreen.kt` (six hours, Jerusalem cross, today’s verse). Bell and gear log until Task 6. |
+| Hours / Office | `HoursApp.kt` NavHost: `hours`, `office/{hourId}`, settings stub. `OfficeScreen.kt` heading + four sections. |
 | Assets | `verses.json`, `office.json`, `church_bell.ogg` |
 
 ## Privacy

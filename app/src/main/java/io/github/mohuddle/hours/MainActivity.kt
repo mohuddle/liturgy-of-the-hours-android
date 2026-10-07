@@ -1,7 +1,6 @@
 package io.github.mohuddle.hours
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
@@ -16,7 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import io.github.mohuddle.hours.data.HoursSnapshot
 import io.github.mohuddle.hours.data.hoursStore
-import io.github.mohuddle.hours.ui.HoursScreen
+import io.github.mohuddle.hours.ui.HoursApp
 import io.github.mohuddle.hours.ui.theme.HoursTheme
 import java.time.LocalDateTime
 
@@ -37,21 +36,10 @@ class MainActivity : ComponentActivity() {
                     if (loaded == null) {
                         Box(Modifier.fillMaxSize())
                     } else {
-                        HoursScreen(
-                            hours = loaded.hours,
-                            verse = loaded.verse,
-                            verseError = loaded.verseError,
-                            now = now,
-                            onOpenOffice = { hourId -> Log.i(TAG, "open office $hourId") },
-                            onOpenSettings = { Log.i(TAG, "open settings") },
-                        )
+                        HoursApp(snapshot = loaded, now = now)
                     }
                 }
             }
         }
-    }
-
-    private companion object {
-        const val TAG = "Hours"
     }
 }

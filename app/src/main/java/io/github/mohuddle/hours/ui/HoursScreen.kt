@@ -50,7 +50,8 @@ fun HoursScreen(
     modifier: Modifier = Modifier,
 ) {
     val schedule = OfficeModel.scheduleState(now, settingsFrom(hours))
-    val featured = OfficeModel.featuredHour(schedule)
+    val featuredId = featuredOfficeHourId(now, hours)
+    val featured = hours.firstOrNull { it.id == featuredId } ?: OfficeModel.featuredHour(schedule)
     val inWindow = OfficeModel.isCurrentWindow(
         schedule.current,
         schedule.nowMinutes,
