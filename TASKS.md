@@ -4,7 +4,7 @@ v1 progress for the Android Liturgy of the Hours. Product decisions: [DESIGN.md]
 
 Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarchy-liturgy-of-the-hours).
 
-**9 of 10 done. Next: Task 10.**
+**10 of 10 done.**
 
 ## Board
 
@@ -19,7 +19,7 @@ Desktop plugin: [omarchy-liturgy-of-the-hours](https://github.com/mohuddle/omarc
 | 7 | Settings screen | Done 2026-10-07 | Prime 07:30 and Terce off survive force-stop. Hours mutes Terce. `onScheduleChanged` stub. |
 | 8 | Alarm scheduling | Done 2026-10-07 | `AlarmSchedulerTest` 5/5. Six clocks; Terce off → five; 18:00 evening tomorrow; boot/time/timezone reschedule. `SCHEDULE_EXACT_ALARM`. |
 | 9 | Notifications, receiver, permission CTAs | Done 2026-10-07 | `HourReceiverTest` 6/6. Emulator: Terce at 09:00 posted ongoing HIGH with church bell; tap opened Terce Office; Hours cleared the toast. |
-| 10 | Device pass (emulator / G5) | Remaining | |
+| 10 | Device pass (emulator / G5) | Done 2026-10-07 | LG G5 h830 Lineage 22.2 / Android 15. All six checks pass. See log. |
 
 ### Later (not v1)
 
@@ -34,7 +34,7 @@ After a task’s “Done when” is true, mark it on this board, refresh the REA
 
 ## File map
 
-Landed through Task 9: domain, store, Hours, Office, Settings, alarms, hour notifications. Device pass is still planned.
+Landed through Task 10: v1 complete. Device pass recorded below.
 
 ```
 app/src/main/java/io/github/mohuddle/hours/
@@ -197,7 +197,7 @@ Full `OfficeModelTest` green. Domain is complete.
 
 ---
 
-## Task 10: Device pass
+## Task 10: Device pass ✅
 
 **Files:** none required except bugfixes. Manual checklist.
 
@@ -216,7 +216,18 @@ Record results (device, Android version, pass/fail) at the bottom of this file. 
 
 ## Device pass log
 
-_(Task 10 fills this in.)_
+**Device:** LG G5 (h830), LineageOS 22.2-20261001-NIGHTLY, Android 15 (API 35). Airplane mode on for the whole pass.
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Prime two minutes ahead → bell + notification → tap opens Office | **PASS.** Prime set 09:50 (from 09:48). Ongoing HIGH `Prime — First Hour` with `church_bell`. Tap opened Prime office (chapter 1 Timothy 1:17). |
+| 2 | Open Hours → notification gone | **PASS.** Back to Hours cleared the toast. |
+| 3 | Reboot before the next hour → it still fires | **PASS.** None set 10:10, rebooted at 10:00. `BOOT_COMPLETED` rescheduled `RTC_WAKEUP` for 10:10. `None — Ninth Hour` posted at 10:10:04 without opening the app. |
+| 4 | Deny notifications → Settings CTA → grant → next hour works | **PASS.** Revoke `POST_NOTIFICATIONS` showed “Allow notifications” and opened system app-notification settings. Grant, Sext at 10:00 posted `Sext — Sixth Hour`. |
+| 5 | Disable Terce → it does not fire | **PASS.** Terce off at 09:55. No `Terce — Third Hour` through 09:56. |
+| 6 | Airplane mode the whole time | **PASS.** `airplane_mode_on=1` before launch and after reboot. |
+
+API 29 + 35 emulators not required: G5 is Android 10+.
 
 ## Session prompt
 

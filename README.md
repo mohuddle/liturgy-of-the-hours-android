@@ -10,7 +10,7 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Progress: 9 of 10 v1 tasks.** Next is Task 10 (Device pass). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+**Progress: 10 of 10 v1 tasks.** Device pass is on the LG G5 (Lineage 22.2 / Android 15). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
 
 | Status | Task |
 |---|---|
@@ -23,7 +23,7 @@ This is the phone app. The desktop plugin stays in its own repository. The two d
 | Done | 7. Settings screen |
 | Done | 8. Alarm scheduling |
 | Done | 9. Notifications, receiver, permission CTAs |
-| Next | 10. Device pass |
+| Done | 10. Device pass (LG G5, Android 15) |
 
 The debug APK opens on the Hours screen: six hours, the current hour in accent, and today’s BSB verse. The bell opens the featured hour’s office; tapping a row opens that hour. Gear opens Settings (reminders, enable, and time per hour). There is no Play listing.
 
@@ -73,7 +73,7 @@ There is no Play listing. Install from a build of this repository.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). Unit tests 29/29. `HourReceiverTest` 6/6 (happy path, stale, already-notified, disabled, reminders off, permission CTAs). On an API 35 emulator a Terce `setAlarmClock` posted an ongoing HIGH notification with the church bell; tapping it opened Terce’s office; returning to Hours cleared the toast.
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). Unit tests 29/29. Device pass on an LG G5 (Lineage 22.2 / Android 15), airplane mode on: Prime +2 min bell and Office tap, Hours clears the toast, reboot still fires, notification CTA then grant, disabled Terce stays silent. Log: **[TASKS.md](TASKS.md)**.
 
 ## Technical specs
 
