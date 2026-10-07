@@ -83,6 +83,7 @@ class AndroidAlarmClock(private val context: Context) : AlarmClock {
     }
 
     override fun setAlarmClock(hourId: String, at: LocalDateTime, date: String) {
+        if (android.os.Build.VERSION.SDK_INT >= 31 && !manager.canScheduleExactAlarms()) return
         val trigger = at.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val operation = pendingIntent(hourId, date)
         val show = PendingIntent.getActivity(

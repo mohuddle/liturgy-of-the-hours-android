@@ -1,12 +1,15 @@
 package io.github.mohuddle.hours.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import io.github.mohuddle.hours.data.HoursSnapshot
 import io.github.mohuddle.hours.domain.Hour
+import io.github.mohuddle.hours.notify.PermissionCtas
 import java.time.LocalDateTime
 import kotlinx.coroutines.launch
 
@@ -32,11 +36,33 @@ fun HoursApp(
     now: LocalDateTime,
     onSaveSettings: suspend (notificationsEnabled: Boolean, hours: List<Hour>) -> HoursSnapshot,
     onScheduleChanged: () -> Unit = {},
+    openOfficeHourId: String? = null,
+    onHoursOpened: () -> Unit = {},
+    permissionCtas: PermissionCtas = PermissionCtas(false, false),
+    onAllowNotifications: () -> Unit = {},
+    onAllowExactAlarms: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var current by remember { mutableStateOf(snapshot) }
     val scope = rememberCoroutineScope()
     val navController = rememberNavController()
+    val suppressNextHoursDismiss = remember { booleanArrayOf(openOfficeHourId != null) }
+    DisposableEffect(navController) {
+        val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
+            if (destination.route != HoursRoutes.HOURS) return@OnDestinationChangedListener
+            if (suppressNextHoursDismiss[0]) {
+                suppressNextHoursDismiss[0] = false
+            } else {
+                onHoursOpened()
+            }
+        }
+        navController.addOnDestinationChangedListener(listener)
+        onDispose { navController.removeOnDestinationChangedListener(listener) }
+    }
+    LaunchedEffect(openOfficeHourId) {
+        val hourId = openOfficeHourId ?: return@LaunchedEffect
+        navController.navigate(HoursRoutes.office(hourId))
+    }
     NavHost(
         navController = navController,
         startDestination = HoursRoutes.HOURS,
@@ -68,6 +94,9 @@ fun HoursApp(
             SettingsScreen(
                 notificationsEnabled = current.notificationsEnabled,
                 hours = current.hours,
+                permissionCtas = permissionCtas,
+                onAllowNotifications = onAllowNotifications,
+                onAllowExactAlarms = onAllowExactAlarms,
                 onBack = { navController.popBackStack() },
                 onChange = { notificationsEnabled, hours ->
                     current = current.copy(

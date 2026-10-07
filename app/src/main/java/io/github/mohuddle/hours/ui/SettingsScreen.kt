@@ -19,7 +19,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimeInput
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.mohuddle.hours.domain.Hour
 import io.github.mohuddle.hours.domain.OfficeModel
+import io.github.mohuddle.hours.notify.PermissionCtas
 import io.github.mohuddle.hours.ui.theme.HoursAccent
 import io.github.mohuddle.hours.ui.theme.HoursForeground
 import io.github.mohuddle.hours.ui.theme.HoursMuted
@@ -49,6 +50,9 @@ fun SettingsScreen(
     hours: List<Hour>,
     onBack: () -> Unit,
     onChange: (notificationsEnabled: Boolean, hours: List<Hour>) -> Unit,
+    permissionCtas: PermissionCtas = PermissionCtas(false, false),
+    onAllowNotifications: () -> Unit = {},
+    onAllowExactAlarms: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var pickingId by remember { mutableStateOf<String?>(null) }
@@ -93,6 +97,23 @@ fun SettingsScreen(
                     ),
                     modifier = Modifier.semantics { contentDescription = "Hour reminders" },
                 )
+            }
+
+            if (permissionCtas.allowNotifications) {
+                TextButton(
+                    onClick = onAllowNotifications,
+                    modifier = Modifier.semantics { contentDescription = "Allow notifications" },
+                ) {
+                    Text("Allow notifications", color = HoursAccent)
+                }
+            }
+            if (permissionCtas.allowExactAlarms) {
+                TextButton(
+                    onClick = onAllowExactAlarms,
+                    modifier = Modifier.semantics { contentDescription = "Allow exact alarms" },
+                ) {
+                    Text("Allow exact alarms", color = HoursAccent)
+                }
             }
 
             Spacer(Modifier.height(16.dp))
@@ -181,7 +202,7 @@ fun SettingsScreen(
                 dismissButton = {
                     TextButton(onClick = { pickingId = null }) { Text("Cancel") }
                 },
-                text = { TimePicker(state = state) },
+                text = { TimeInput(state = state) },
             )
         }
     }
