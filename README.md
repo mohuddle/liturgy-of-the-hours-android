@@ -10,7 +10,7 @@ Package: `io.github.mohuddle.hours`
 
 This is the phone app. The desktop plugin stays in its own repository. The two do not share a process or settings file.
 
-**Progress: 6 of 10 v1 tasks.** Next is Task 7 (Settings screen). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
+**Progress: 7 of 10 v1 tasks.** Next is Task 8 (Alarm scheduling). Full board: **[TASKS.md](TASKS.md)**. Design: **[DESIGN.md](DESIGN.md)**.
 
 | Status | Task |
 |---|---|
@@ -20,10 +20,11 @@ This is the phone app. The desktop plugin stays in its own repository. The two d
 | Done | 4. Persistence (DataStore + asset JSON) |
 | Done | 5. Hours screen |
 | Done | 6. Office screen and navigation |
-| Next | 7. Settings screen |
-| Remaining | 8–10 Alarms, notifications, device pass |
+| Done | 7. Settings screen |
+| Next | 8. Alarm scheduling |
+| Remaining | 9–10 Notifications, device pass |
 
-The debug APK opens on the Hours screen: six default hours, the current hour in accent, and today’s BSB verse. The bell opens the featured hour’s office; tapping a row opens that hour. Gear opens a Settings stub (fields are Task 7). There is no Play listing.
+The debug APK opens on the Hours screen: six hours, the current hour in accent, and today’s BSB verse. The bell opens the featured hour’s office; tapping a row opens that hour. Gear opens Settings (reminders, enable, and time per hour). There is no Play listing.
 
 ---
 
@@ -71,7 +72,7 @@ There is no Play listing. Install from a build of this repository.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 4/4 green. `OfficeViewTest` is 4/4 green (None fixture, Sext, missing book, featured hour). On an API 35 emulator the Hours screen lists the six hours; tapping Sext opens Sext’s office with heading and four sections; the bell opens the featured hour; Back returns to Hours.
+`assembleDebug` succeeds (`minSdk 29`, `targetSdk 36`). `OfficeModelTest` is 8/8 green. `HoursStoreTest` is 6/6 green (defaults, verse rotation, `lastNotified`, corrupt JSON, Prime 07:30 across process, disable hour). `OfficeViewTest` is 4/4 green. On an API 35 emulator: Settings sets Prime to 07:30 and turns Terce off; Hours mutes Terce; force-stop then reopen still shows 07:30.
 
 ## Technical specs
 

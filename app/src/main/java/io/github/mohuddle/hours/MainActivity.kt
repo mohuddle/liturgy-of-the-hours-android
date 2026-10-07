@@ -36,7 +36,14 @@ class MainActivity : ComponentActivity() {
                     if (loaded == null) {
                         Box(Modifier.fillMaxSize())
                     } else {
-                        HoursApp(snapshot = loaded, now = now)
+                        HoursApp(
+                            snapshot = loaded,
+                            now = now,
+                            onSaveSettings = { notificationsEnabled, hours ->
+                                store.saveSettings(notificationsEnabled, hours)
+                                store.load(now)
+                            },
+                        )
                     }
                 }
             }

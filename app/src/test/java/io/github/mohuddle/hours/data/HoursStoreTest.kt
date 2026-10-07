@@ -1,5 +1,6 @@
 package io.github.mohuddle.hours.data
 
+import io.github.mohuddle.hours.domain.OfficeModel
 import java.io.File
 import java.time.LocalDateTime
 import java.util.UUID
@@ -80,6 +81,40 @@ class HoursStoreTest {
         val again = store.load(LocalDateTime.of(2026, 8, 19, 12, 0))
         assertEquals(mapOf("terce" to "2026-08-19"), again.lastNotified)
         assertEquals(0, again.versePosition)
+    }
+
+    @Test
+    fun primeTimeSurvivesNewStoreInstance() = runBlocking {
+        val file = File(dir, "${UUID.randomUUID()}.preferences_pb")
+        val firstScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        val first = HoursStore(HoursStore.newDataStore(file, firstScope), ::bundledAsset)
+        first.load(LocalDateTime.of(2026, 8, 19, 9, 0))
+        val hours = OfficeModel.resolvedHours().map {
+            if (it.id == "prime") it.copy(time = "07:30") else it
+        }
+        first.saveSettings(notificationsEnabled = true, hours = hours)
+        firstScope.cancel()
+
+        val afterKill = HoursStore(HoursStore.newDataStore(file, scope), ::bundledAsset)
+        val again = afterKill.load(LocalDateTime.of(2026, 8, 19, 12, 0))
+        assertEquals("07:30", again.hours.first { it.id == "prime" }.time)
+        assertEquals("07:00", OfficeModel.hourById("prime")!!.defaultTime)
+        assertEquals("Genesis 1:1", again.verse!!.reference)
+    }
+
+    @Test
+    fun disablingAnHourPersistsAndLeavesOthersEnabled() = runBlocking {
+        val store = newStore()
+        store.load(LocalDateTime.of(2026, 8, 19, 9, 0))
+        val hours = OfficeModel.resolvedHours().map {
+            if (it.id == "terce") it.copy(enabled = false) else it
+        }
+        store.saveSettings(notificationsEnabled = false, hours = hours)
+        val again = store.load(LocalDateTime.of(2026, 8, 19, 9, 0))
+        assertEquals(false, again.notificationsEnabled)
+        assertEquals(false, again.hours.first { it.id == "terce" }.enabled)
+        assertTrue(again.hours.filter { it.id != "terce" }.all { it.enabled })
+        assertEquals("09:00", again.hours.first { it.id == "terce" }.time)
     }
 
     @Test

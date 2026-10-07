@@ -1,27 +1,21 @@
 package io.github.mohuddle.hours.ui
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import io.github.mohuddle.hours.data.HoursSnapshot
-import io.github.mohuddle.hours.ui.theme.HoursForeground
+import io.github.mohuddle.hours.domain.Hour
 import java.time.LocalDateTime
+import kotlinx.coroutines.launch
 
 object HoursRoutes {
     const val HOURS = "hours"
@@ -36,8 +30,12 @@ object HoursRoutes {
 fun HoursApp(
     snapshot: HoursSnapshot,
     now: LocalDateTime,
+    onSaveSettings: suspend (notificationsEnabled: Boolean, hours: List<Hour>) -> HoursSnapshot,
+    onScheduleChanged: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    var current by remember { mutableStateOf(snapshot) }
+    val scope = rememberCoroutineScope()
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -46,9 +44,9 @@ fun HoursApp(
     ) {
         composable(HoursRoutes.HOURS) {
             HoursScreen(
-                hours = snapshot.hours,
-                verse = snapshot.verse,
-                verseError = snapshot.verseError,
+                hours = current.hours,
+                verse = current.verse,
+                verseError = current.verseError,
                 now = now,
                 onOpenOffice = { hourId -> navController.navigate(HoursRoutes.office(hourId)) },
                 onOpenSettings = { navController.navigate(HoursRoutes.SETTINGS) },
@@ -62,38 +60,26 @@ fun HoursApp(
         ) { entry ->
             val hourId = entry.arguments?.getString(HoursRoutes.HOUR_ID) ?: "morning"
             OfficeScreen(
-                state = officeViewState(now, hourId, snapshot.hours, snapshot.officeBook),
+                state = officeViewState(now, hourId, current.hours, current.officeBook),
                 onBack = { navController.popBackStack() },
             )
         }
         composable(HoursRoutes.SETTINGS) {
-            SettingsStubScreen(onBack = { navController.popBackStack() })
-        }
-    }
-}
-
-@Composable
-private fun SettingsStubScreen(
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 28.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                HoursBackButton(onClick = onBack)
-                Text(
-                    text = "Settings",
-                    color = HoursForeground,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(start = 16.dp),
-                )
-            }
-            Spacer(Modifier.height(24.dp))
+            SettingsScreen(
+                notificationsEnabled = current.notificationsEnabled,
+                hours = current.hours,
+                onBack = { navController.popBackStack() },
+                onChange = { notificationsEnabled, hours ->
+                    current = current.copy(
+                        notificationsEnabled = notificationsEnabled,
+                        hours = hours,
+                    )
+                    scope.launch {
+                        current = onSaveSettings(notificationsEnabled, hours)
+                        onScheduleChanged()
+                    }
+                },
+            )
         }
     }
 }

@@ -119,6 +119,21 @@ class HoursStore(
         }
     }
 
+    suspend fun saveSettings(
+        notificationsEnabled: Boolean,
+        hours: List<Hour>,
+    ) {
+        val byId = hours.associateBy { it.id }
+        dataStore.edit { mutable ->
+            mutable[Keys.notificationsEnabled] = notificationsEnabled
+            for (hour in OfficeModel.HOURS) {
+                val match = byId[hour.id]
+                mutable[Keys.enabled(hour.id)] = match?.enabled ?: true
+                mutable[Keys.time(hour.id)] = OfficeModel.parseHm(match?.time, hour.defaultTime)
+            }
+        }
+    }
+
     private fun settingsFrom(prefs: Preferences): Map<String, Any?> {
         val settings = linkedMapOf<String, Any?>()
         prefs[Keys.notificationsEnabled]?.let { settings["notificationsEnabled"] = it }
